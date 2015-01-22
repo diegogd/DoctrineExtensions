@@ -467,8 +467,10 @@ class TranslatableListener extends MappedEventSubscriber
                 $translated = '';
                 foreach ((array) $result as $entry) {
                     if ($entry['field'] == $field) {
-                        $translated = $entry['content'];
-                        break;
+			if (array_key_exists('content', $entry)){
+	                   $translated = $entry['content'];
+                           break;
+			}
                     }
                 }
                 // update translation
