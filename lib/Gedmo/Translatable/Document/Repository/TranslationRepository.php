@@ -135,7 +135,9 @@ class TranslationRepository extends DocumentRepository
             }
             if ($data && is_array($data) && count($data)) {
                 foreach ($data as $row) {
+			if (array_key_exists('content', $row)) {
                     $result[$row['locale']][$row['field']] = $row['content'];
+			}
                 }
             }
         }
