@@ -10,6 +10,7 @@ use Doctrine\ODM\MongoDB\UnitOfWork;
 use Doctrine\ODM\MongoDB\Mapping\ClassMetadata;
 use Gedmo\Tool\Wrapper\MongoDocumentWrapper;
 use Gedmo\Translatable\Mapping\Event\Adapter\ODM as TranslatableAdapterODM;
+use Symfony\Component\PropertyAccess\PropertyAccess;
 
 /**
  * The TranslationRepository has some useful functions
@@ -109,6 +110,7 @@ class TranslationRepository extends DocumentRepository
     {
         $result = array();
         $wrapped = new MongoDocumentWrapper($document, $this->dm);
+
         if ($wrapped->hasValidIdentifier()) {
             $documentId = $wrapped->getIdentifier();
 
@@ -117,6 +119,16 @@ class TranslationRepository extends DocumentRepository
             $config = $this
                 ->getTranslatableListener()
                 ->getConfiguration($this->dm, get_class($document));
+
+            // Add defaultLocale translation
+            if (($defaultLocale = $this->listener->getDefaultLocale()) && $config['fields']) {
+                foreach ($config['fields'] as $fieldName) {
+                    $accessor = PropertyAccess::createPropertyAccessor();
+
+                    $value = $accessor->getValue($document, $fieldName);
+                    $result[$defaultLocale][$fieldName] = $value;
+                }
+            }
 
             $translationClass = isset($config['translationClass']) ?
                 $config['translationClass'] :
@@ -135,9 +147,9 @@ class TranslationRepository extends DocumentRepository
             }
             if ($data && is_array($data) && count($data)) {
                 foreach ($data as $row) {
-			if (array_key_exists('content', $row)) {
-                    $result[$row['locale']][$row['field']] = $row['content'];
-			}
+			        if (array_key_exists('content', $row)) {
+                        $result[$row['locale']][$row['field']] = $row['content'];
+			        }
                 }
             }
         }
