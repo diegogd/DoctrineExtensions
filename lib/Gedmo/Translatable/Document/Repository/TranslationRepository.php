@@ -72,10 +72,13 @@ class TranslationRepository extends DocumentRepository
                 $ea = new TranslatableAdapterODM();
                 $class = $listener->getTranslationClass($ea, $config['useObjectClass']);
             }
-            $foreignKey = $meta->getReflectionProperty($meta->identifier)->getValue($document);
+
+            // This avoid problems with keys that are decimals as they are stored as strings in the Document
+            $foreignKey = (string) $meta->getReflectionProperty($meta->identifier)->getValue($document);
             $objectClass = $config['useObjectClass'];
             $transMeta = $this->dm->getClassMetadata($class);
-            $trans = $this->findOneBy(compact('locale', 'field', 'objectClass', 'foreignKey'));
+            $criteria = compact('locale', 'field', 'objectClass', 'foreignKey');
+            $trans = $this->findOneBy($criteria);
             if (!$trans) {
                 $trans = $transMeta->newInstance();
                 $transMeta->getReflectionProperty('foreignKey')->setValue($trans, $foreignKey);
@@ -183,7 +186,7 @@ class TranslationRepository extends DocumentRepository
             $q->setHydrate(false);
             $result = $q->execute();
             if ($result instanceof Cursor) {
-                $result = $result->toArray();
+                $result = $result->toArray(false);
             }
             $id = count($result) ? $result[0]['foreignKey'] : null;
             if ($id) {
