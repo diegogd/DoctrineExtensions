@@ -129,7 +129,6 @@ class TranslationRepository extends DocumentRepository
                 if ($listenerLocale != $defaultLocale) {
                     $this->listener->setTranslatableLocale($this->listener->getDefaultLocale());
                     $this->dm->refresh($document);
-                    $this->listener->setTranslatableLocale($listenerLocale);
                 }
 
                 foreach ($config['fields'] as $fieldName) {
