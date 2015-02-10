@@ -124,7 +124,14 @@ class TranslationRepository extends DocumentRepository
                 ->getConfiguration($this->dm, get_class($document));
 
             // Add defaultLocale translation
+            $listenerLocale = $this->listener->getListenerLocale();
             if (($defaultLocale = $this->listener->getDefaultLocale()) && $config['fields']) {
+                if ($listenerLocale != $defaultLocale) {
+                    $this->listener->setTranslatableLocale($this->listener->getDefaultLocale());
+                    $this->dm->refresh($document);
+                    $this->listener->setTranslatableLocale($listenerLocale);
+                }
+
                 foreach ($config['fields'] as $fieldName) {
                     $accessor = PropertyAccess::createPropertyAccessor();
 
